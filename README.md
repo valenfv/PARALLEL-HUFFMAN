@@ -1,4 +1,5 @@
 # SISTEMAS-OPERATIVOS
 
+Este es el repositorio del TP final de Sistemas Operativos.
 
-this is a readme
+El mismo es un proyecto MAVEN
