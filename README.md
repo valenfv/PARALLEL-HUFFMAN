@@ -1,4 +1,4 @@
-# SISTEMAS-OPERATIVOS
+# SISTEMAS OPERATIVOS
 
 Este es el repositorio del TP final de Sistemas Operativos.
 
