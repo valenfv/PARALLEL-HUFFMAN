@@ -2,6 +2,7 @@ package Others;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -475,6 +476,7 @@ public class Utilities {
 	 */
 	
 	public static BufferedImage parallelDecoder(ArrayList<Byte> encoded, int processors) {
+		long inicio = System.currentTimeMillis(); 
 		formDecompression.label.setText("OBTENIENDO HEADER");
 		Header header = Utilities.getHeader(encoded);
 		formDecompression.label.setText("OBTENIENDO CODIFICACION");
@@ -543,54 +545,20 @@ public class Utilities {
 		// parallelize image generator
 		
 		
-		
-		int pixel = 0;
-		
-		// block number
-		int bn = 0;
-		int by = 0;
-		while(by < header.getWholeY()) {
-			int bx = 0;
-			while(bx < header.getWholeX()) {
-				// intert block
-				for(int y = by; y < by + header.getY(bn); y++) {
-					for(int x = bx; x < bx + header.getX(bn); x++) {
-						//System.out.println("algo : " + pixel);
-						int color = 0;
-						try {
-							color = decoded.get(pixel);
-							//color = deco[pixel];
-						}catch(IndexOutOfBoundsException e) {
-						
-						}
-						try {
-							nuevaImagen.setRGB(x, y, new Color(color, color, color).getRGB());
-						}catch(ArrayIndexOutOfBoundsException e) {
-							//System.out.println("x " + x + "y " + y);
-						}
-						pixel++;
-					}
-				}
-				// moverme en x hasta la pos del ultimo columna del ultimo bloque
-				bx += header.getX(bn);		
-				bn++;
-					
-				formDecompression.progressBar.setValue(formDecompression.progressBar.getValue() + 1);
-			}
-			// bajo la cantidad del ultimo bloque metido ya q toda esa fila es del mismo alto
-			by += header.getY(bn - 1);
-		}
+		BufferedImage returnee = writeImage(decoded, header);
 				
 		executor.shutdown();
 		formDecompression.label.setText("ESPERANDO A QUE TERMINEN TODAS LAS TAREAS");
 		
+		
+		long fin = System.currentTimeMillis(); 
+		formDecompression.textPane.setText("Tiempo transcurrido en decompresion: " + (fin - inicio));
+		
 		formDecompression.label.setText("FINALIZADO");
 		
-		return nuevaImagen;
+		return returnee;
 	}
 	public static BufferedImage parallelDecoder2(ArrayList<Byte> encoded, int processors) {
-		
-		
 		
 		long inicio = System.currentTimeMillis();
     	
@@ -635,6 +603,8 @@ public class Utilities {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		formDecompression.label.setText("ESCRIBIENDO IMAGEN");
 		BufferedImage returnee = writeImage(decodificada, header);
 		
 		long fin = System.currentTimeMillis(); 
@@ -731,8 +701,9 @@ public class Utilities {
 		}
 		return writeImage(decodedA, header);
 	}
+	
 	public static BufferedImage writeImage(Integer[] decoded, Header header) {
-		double[] decoD = new double[decoded.length];
+		int[] decoD = new int[decoded.length];
 		int pixel = 0;
 		int bn = 0;
 		int by = 0;
@@ -743,7 +714,7 @@ public class Utilities {
 				for(int y = by; y < by + header.getY(bn); y++) {
 					for(int x = bx; x < bx + header.getX(bn); x++) {
 						int color = decoded[pixel];
-						decoD[header.getWholeX() * y + x] = (double) color / 256d;
+						decoD[header.getWholeX() * y + x] = color;
 						pixel++;
 					}
 				}
@@ -752,8 +723,14 @@ public class Utilities {
 			}
 			by += header.getY(bn - 1);
 		}
-		MBFImage img = new MBFImage(decoD, header.getWholeX(), header.getWholeY(), 1, false);
-		return ImageUtilities.createBufferedImage(img);
+		BufferedImage bi = new BufferedImage(header.getWholeX(),header.getWholeY(),BufferedImage.TYPE_BYTE_GRAY);
+		WritableRaster newRaster = bi.getRaster();
+		newRaster.setDataElements(0,0,header.getWholeX(),header.getWholeY(), decoD);
+		bi.setData(newRaster);
+		//MBFImage img = new MBFImage(decoD, header.getWholeX(), header.getWholeY(), 1, false);
+		//return ImageUtilities.createBufferedImage(img);
+		//kajhdjkashdkjsahd
+		return bi;
 	}
 	
 }
