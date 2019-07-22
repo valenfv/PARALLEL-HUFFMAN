@@ -162,7 +162,7 @@ public class formDecompression extends JPanel{
 					    	if(pro == -1) {
 					    		pro = Runtime.getRuntime().availableProcessors();
 					    	}
-					    	bi = Utilities.parallelDecoder2(decode, pro);
+					    	bi = Utilities.parallelDecoder(decode, pro);
 					    	long end = System.currentTimeMillis();
 					    	//textPane.setText("Tiempo transcurrido (PARALELA CON " + pro + " PROCESADORES): " + (end - start));
 					    }else {
@@ -170,7 +170,7 @@ public class formDecompression extends JPanel{
 					    	long end = System.currentTimeMillis();
 					    	//textPane.setText("Tiempo transcurrido: " + (end - start));
 					    }					    
-					    
+					    System.gc();
 						formDecompression.this.lblNewLabel.setIcon(new ImageIcon(formDecompression.resize(bi, 500, 625)));
 						btnGuarfarCompresion.setEnabled(true);
 					}

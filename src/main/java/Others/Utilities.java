@@ -560,6 +560,8 @@ public class Utilities {
 	}
 	public static BufferedImage parallelDecoder2(ArrayList<Byte> encoded, int processors) {
 		
+		
+		
 		long inicio = System.currentTimeMillis();
     	
 		formDecompression.label.setText("OBTENIENDO HEADER");
@@ -597,6 +599,7 @@ public class Utilities {
 		}				
 		executor.shutdown();
 		
+		
 		try {
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
@@ -604,6 +607,7 @@ public class Utilities {
 			e.printStackTrace();
 		}
 		
+		//System.gc();
 		formDecompression.label.setText("ESCRIBIENDO IMAGEN");
 		BufferedImage returnee = writeImage(decodificada, header);
 		
@@ -703,7 +707,7 @@ public class Utilities {
 	}
 	
 	public static BufferedImage writeImage(Integer[] decoded, Header header) {
-		int[] decoD = new int[decoded.length];
+		double[] decoD = new double[decoded.length];
 		int pixel = 0;
 		int bn = 0;
 		int by = 0;
@@ -714,7 +718,7 @@ public class Utilities {
 				for(int y = by; y < by + header.getY(bn); y++) {
 					for(int x = bx; x < bx + header.getX(bn); x++) {
 						int color = decoded[pixel];
-						decoD[header.getWholeX() * y + x] = color;
+						decoD[header.getWholeX() * y + x] = (double) color / 256d;
 						pixel++;
 					}
 				}
@@ -723,14 +727,9 @@ public class Utilities {
 			}
 			by += header.getY(bn - 1);
 		}
-		BufferedImage bi = new BufferedImage(header.getWholeX(),header.getWholeY(),BufferedImage.TYPE_BYTE_GRAY);
-		WritableRaster newRaster = bi.getRaster();
-		newRaster.setDataElements(0,0,header.getWholeX(),header.getWholeY(), decoD);
-		bi.setData(newRaster);
-		//MBFImage img = new MBFImage(decoD, header.getWholeX(), header.getWholeY(), 1, false);
-		//return ImageUtilities.createBufferedImage(img);
-		//kajhdjkashdkjsahd
-		return bi;
+		MBFImage img = new MBFImage(decoD, header.getWholeX(), header.getWholeY(), 1, false);
+		return ImageUtilities.createBufferedImage(img);
+		//return bi;
 	}
 	
 }
