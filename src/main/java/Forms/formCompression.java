@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JFileChooser;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import Others.ImageParser;
@@ -29,6 +30,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JProgressBar;
 import javax.swing.JTextPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
@@ -53,6 +55,10 @@ public class formCompression extends JPanel{
 	JComboBox comboBox;
 	private JTextField textField_1;
 	private JTextField textField_2;
+	private JButton btnSeleccionar;
+	private int height = 775;
+	private int width = 525;
+
 
 	/**
 	 * Launch the application.
@@ -75,6 +81,7 @@ public class formCompression extends JPanel{
 	 */
 	public formCompression(){
 		initialize();
+		btnSeleccionar.doClick();
 	}
 
 	public static BufferedImage resize(BufferedImage img, int newW, int newH) { 
@@ -95,7 +102,7 @@ public class formCompression extends JPanel{
 		lblNewLabel = new JLabel("");
 		
 		frame = new JFrame();
-		frame.setBounds(20, 20, 524, 752);
+		frame.setBounds(20, 20, width, height);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
@@ -104,11 +111,11 @@ public class formCompression extends JPanel{
 		frame.getContentPane().add(lblSeleccioneImagen);
 		
 		textField = new JTextField();
-		textField.setBounds(16, 26, 340, 26);
+		textField.setBounds(16, 26, 288, 26);
 		frame.getContentPane().add(textField);
 		textField.setColumns(10);
 		
-		JButton btnSeleccionar = new JButton("SELECCIONAR");
+		btnSeleccionar = new JButton("SELECCIONAR");
 		btnSeleccionar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
@@ -125,7 +132,7 @@ public class formCompression extends JPanel{
 				}
 			}
 		});
-		btnSeleccionar.setBounds(356, 26, 112, 29);
+		btnSeleccionar.setBounds(305, 26, 128, 29);
 		frame.getContentPane().add(btnSeleccionar);
 		
 		
@@ -140,13 +147,20 @@ public class formCompression extends JPanel{
 		btnGuarfarCompresion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				chooser = new JFileChooser(); 
-			    chooser.setCurrentDirectory(new java.io.File("."));
-			    chooser.setDialogTitle(destination);
-			    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			    chooser.setAcceptAllFileFilterUsed(false);    
-			    if (chooser.showOpenDialog(formCompression.this) == JFileChooser.APPROVE_OPTION) { 
-			    	Utilities.saveFile(encode, chooser.getSelectedFile().toString());
-			    }
+				chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+			    chooser.setDialogTitle("Guardar imagen codificada");
+			    chooser.setAcceptAllFileFilterUsed(false);
+			    chooser.addChoosableFileFilter(new FileNameExtensionFilter("Imagen codificada (.bin)", "codificacion"));
+			    chooser.setApproveButtonText("Guardar");
+			    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			    if (chooser.showOpenDialog(formCompression.this) == JFileChooser.APPROVE_OPTION) {
+			    	String ruta = chooser.getSelectedFile().getAbsolutePath();
+		            if (ruta.length() > 4 && !ruta.substring(ruta.length() - 4).equalsIgnoreCase(".cod")){
+		                ruta = ruta + ".bin";
+		            }
+			    	Utilities.saveFile(encode, ruta);
+					JOptionPane.showMessageDialog(null, "Compresion guardada", "", JOptionPane.INFORMATION_MESSAGE);
+			    } 
 			}
 		});
 		btnGuarfarCompresion.setEnabled(false);
@@ -231,7 +245,7 @@ public class formCompression extends JPanel{
 				formCompression.this.lblNewLabel.setIcon(new ImageIcon(formCompression.resize(nuevaImagen, 500, 625)));
 			}
 		});
-		btnRand.setBounds(459, 26, 65, 29);
+		btnRand.setBounds(435, 26, 72, 29);
 		frame.getContentPane().add(btnRand);
 		
 		JLabel lblBlockSize = new JLabel("Block size:");

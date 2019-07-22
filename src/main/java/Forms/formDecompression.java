@@ -14,10 +14,8 @@ import javax.swing.JPanel;
 import javax.swing.JFileChooser;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.text.BadLocationException;
-
-import Others.ImageParser;
 import Others.Procesadores;
 import Others.Utilities;
 
@@ -29,6 +27,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
 import javax.swing.JTextPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class formDecompression extends JPanel{
 
@@ -39,7 +38,6 @@ public class formDecompression extends JPanel{
 	public JFrame frame;
 	private JTextField textField;
 	private JLabel lblNewLabel;
-	private static String destination = "";
 	private static String origen = "";
 	private JFileChooser chooser;
 	public static JProgressBar progressBar;
@@ -50,6 +48,8 @@ public class formDecompression extends JPanel{
 	JCheckBox checkBox;
 	JComboBox comboBox;
 	public static JTextPane textPane;
+	private int height = 775;
+	private int width = 525;
 
 	/**
 	 * Launch the application.
@@ -92,7 +92,7 @@ public class formDecompression extends JPanel{
 		lblNewLabel = new JLabel("");
 		
 		frame = new JFrame();
-		frame.setBounds(20, 20, 524, 752);
+		frame.setBounds(20, 20, width, height);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
@@ -132,12 +132,19 @@ public class formDecompression extends JPanel{
 		btnGuarfarCompresion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				chooser = new JFileChooser(); 
-			    chooser.setCurrentDirectory(new java.io.File("."));
-			    chooser.setDialogTitle(destination);
-			    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			    chooser.setAcceptAllFileFilterUsed(false);    
-			    if (chooser.showOpenDialog(formDecompression.this) == JFileChooser.APPROVE_OPTION) { 
-			    	Utilities.saveImage(bi,chooser.getSelectedFile().toString());
+				chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+			    chooser.setDialogTitle("Guardar imagen");
+			    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			    chooser.setAcceptAllFileFilterUsed(false);
+			    chooser.addChoosableFileFilter(new FileNameExtensionFilter("Imagen (.bmp)", "decodificacion"));
+			    chooser.setApproveButtonText("Guardar");
+			    if (chooser.showOpenDialog(formDecompression.this) == JFileChooser.APPROVE_OPTION) {
+			    	String ruta = chooser.getSelectedFile().getAbsolutePath();
+		            if (ruta.length() > 4 && !ruta.substring(ruta.length() - 4).equalsIgnoreCase(".bmp")){
+		                ruta = ruta + ".bmp";
+		            }
+			    	Utilities.saveImage(bi,ruta);
+			    	JOptionPane.showMessageDialog(null, "Imagen guardada", "", JOptionPane.INFORMATION_MESSAGE);
 			    }
 			}
 		});
@@ -171,13 +178,14 @@ public class formDecompression extends JPanel{
 					    	//textPane.setText("Tiempo transcurrido: " + (end - start));
 					    }					    
 					    System.gc();
+
 						formDecompression.this.lblNewLabel.setIcon(new ImageIcon(formDecompression.resize(bi, 500, 625)));
 						btnGuarfarCompresion.setEnabled(true);
 					}
 					
 				});
 			    parallel.start();
-				
+			    
 			}
 		});
 		btnCrearArchivos.setBounds(27, 699, 199, 25);
@@ -192,7 +200,7 @@ public class formDecompression extends JPanel{
 		frame.getContentPane().add(label);
 		
 		JLabel label_1 = new JLabel("Seleccione procesadores:");
-		label_1.setBounds(16, 607, 159, 16);
+		label_1.setBounds(16, 607, 183, 16);
 		frame.getContentPane().add(label_1);
 		
 		Procesadores[] proce = new Procesadores[201];
@@ -203,11 +211,11 @@ public class formDecompression extends JPanel{
 		
 		comboBox = new JComboBox(proce);
 		comboBox.setSelectedIndex(0);
-		comboBox.setBounds(187, 603, 71, 27);
+		comboBox.setBounds(199, 603, 71, 27);
 		frame.getContentPane().add(comboBox);
 		
 		checkBox = new JCheckBox("PARALLEL VERSION");
-		checkBox.setBounds(355, 603, 151, 23);
+		checkBox.setBounds(335, 603, 160, 23);
 		frame.getContentPane().add(checkBox);
 		
 		textPane = new JTextPane();

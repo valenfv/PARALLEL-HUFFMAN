@@ -2,7 +2,7 @@ package Others;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -29,11 +29,7 @@ import Huffman.Huffman;
 import Parallel.ParallelDecoder;
 import Parallel.ParallelDecoder2;
 import Parallel.ParallelEncoder;
-import Parallel.ParallelImageGenerator;
-import Parallel.ParallelImageGenerator3;
 import RunLenght.RunLenghtC;
-
-import org.openimaj.image.DisplayUtilities;
 import org.openimaj.image.ImageUtilities;
 import org.openimaj.image.MBFImage;
 
@@ -128,7 +124,6 @@ public class Utilities {
 				try {
 					coloractual=image.getRGB(j, i).getRed();
 				}catch(ArrayIndexOutOfBoundsException e) {
-					System.out.println("i: " + i + " j: " + j);
 				}
 				
 				if(j!=0 || i!=0) {
@@ -231,9 +226,6 @@ public class Utilities {
 		
 		int size = getHeaderSize(byteArray);
 		
-		System.out.println("Header size: " + size);
-		
-		
 		ArrayList<Byte> aux = new ArrayList<Byte>();
 		for(int i = size + 3; i < byteArray.size(); i++)
 			aux.add(byteArray.get(i));
@@ -289,7 +281,7 @@ public class Utilities {
 			for(int i = 0; i < byteCode.length; i++) {
 				byteCode[i] = info.get(i);
 			}
-			FileOutputStream fos = new FileOutputStream(path+"/compressed.bin");
+			FileOutputStream fos = new FileOutputStream(path);
 			//writes de file in disk
 			fos.write(byteCode);
 			fos.close();
@@ -311,6 +303,7 @@ public class Utilities {
 			for(int i = 0; i < inputSequence.length; i++) {
 				encodeImage.add(inputSequence[i]);
 			}
+			//System.gc();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
@@ -343,7 +336,6 @@ public class Utilities {
 		// create a pool of threads with available processors
 		if(processors == -1) {
 			processors = Runtime.getRuntime().availableProcessors();
-			System.out.println("Using available processors");
 		}
 		ExecutorService executor = Executors.newFixedThreadPool(processors);
 		ArrayList<Callable<ArrayList<Byte>>> callables = new ArrayList<Callable<ArrayList<Byte>>>();
@@ -389,11 +381,9 @@ public class Utilities {
 		for(int j = 0; j < blocks; j++) {
 			// get the block
 			ImageParser b = i.getBlock(j);
-			//System.out.println("BLOQUE " + j);
 			if(true) {
 				Double[] p = Utilities.getPObjectArray(b);
 				// Huffman Case
-				//System.out.println("El bloque "+ j + " usa Huffman");
 				ArrayList<Byte> hffmn = Huffman.encode(Huffman.getHuffman(p), b);
 				h.setHuffman(j, p);
 				h.setBlockSizeEncoded(j, hffmn.size());
@@ -407,7 +397,6 @@ public class Utilities {
 			}else {
 				// rlc case
 
-				System.out.println("El bloque "+ j + " usa RLC");
 				ArrayList<Byte> rlc = RunLenghtC.encode(b);
 				h.setRLC(j);
 				h.setBlockSizeEncoded(j, rlc.size());
@@ -476,7 +465,6 @@ public class Utilities {
 	 */
 	
 	public static BufferedImage parallelDecoder(ArrayList<Byte> encoded, int processors) {
-		long inicio = System.currentTimeMillis(); 
 		formDecompression.label.setText("OBTENIENDO HEADER");
 		Header header = Utilities.getHeader(encoded);
 		formDecompression.label.setText("OBTENIENDO CODIFICACION");
@@ -545,18 +533,48 @@ public class Utilities {
 		// parallelize image generator
 		
 		
-		BufferedImage returnee = writeImage(decoded, header);
+		
+		int pixel = 0;
+		
+		// block number
+		int bn = 0;
+		int by = 0;
+		while(by < header.getWholeY()) {
+			int bx = 0;
+			while(bx < header.getWholeX()) {
+				// intert block
+				for(int y = by; y < by + header.getY(bn); y++) {
+					for(int x = bx; x < bx + header.getX(bn); x++) {
+						int color = 0;
+						try {
+							color = decoded.get(pixel);
+							//color = deco[pixel];
+						}catch(IndexOutOfBoundsException e) {
+						
+						}
+						try {
+							nuevaImagen.setRGB(x, y, new Color(color, color, color).getRGB());
+						}catch(ArrayIndexOutOfBoundsException e) {
+						}
+						pixel++;
+					}
+				}
+				// moverme en x hasta la pos del ultimo columna del ultimo bloque
+				bx += header.getX(bn);		
+				bn++;
+					
+				formDecompression.progressBar.setValue(formDecompression.progressBar.getValue() + 1);
+			}
+			// bajo la cantidad del ultimo bloque metido ya q toda esa fila es del mismo alto
+			by += header.getY(bn - 1);
+		}
 				
 		executor.shutdown();
 		formDecompression.label.setText("ESPERANDO A QUE TERMINEN TODAS LAS TAREAS");
 		
-		
-		long fin = System.currentTimeMillis(); 
-		formDecompression.textPane.setText("Tiempo transcurrido en decompresion: " + (fin - inicio));
-		
 		formDecompression.label.setText("FINALIZADO");
 		
-		return returnee;
+		return nuevaImagen;
 	}
 	public static BufferedImage parallelDecoder2(ArrayList<Byte> encoded, int processors) {
 		
@@ -606,16 +624,19 @@ public class Utilities {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+<<<<<<< HEAD
 		
 		//System.gc();
 		formDecompression.label.setText("ESCRIBIENDO IMAGEN");
+=======
+>>>>>>> aa5328958eb0c7998876b9b47d33f6b11ad47d09
 		BufferedImage returnee = writeImage(decodificada, header);
 		
 		long fin = System.currentTimeMillis(); 
 		formDecompression.textPane.setText("Tiempo transcurrido en decompresion: " + (fin - inicio));
 		
 		formDecompression.label.setText("FINALIZADO");
-		
+
 		return returnee;
 		//return nuevaImagen;
 	}
@@ -691,10 +712,9 @@ public class Utilities {
 	}
 	
 	public static void saveImage(BufferedImage bi, String path) {
-		try {				
-			ImageIO.write(bi, "bmp", new File(path+"/compressedImage.bmp"));
+		try {
+	        ImageIO.write(bi,"PNG",new File(path));
 		} catch (IOException e) {
-			System.out.println("hola");
 			e.printStackTrace();
 		}
 	}
@@ -705,7 +725,6 @@ public class Utilities {
 		}
 		return writeImage(decodedA, header);
 	}
-	
 	public static BufferedImage writeImage(Integer[] decoded, Header header) {
 		double[] decoD = new double[decoded.length];
 		int pixel = 0;
@@ -729,7 +748,10 @@ public class Utilities {
 		}
 		MBFImage img = new MBFImage(decoD, header.getWholeX(), header.getWholeY(), 1, false);
 		return ImageUtilities.createBufferedImage(img);
+<<<<<<< HEAD
 		//return bi;
+=======
+>>>>>>> aa5328958eb0c7998876b9b47d33f6b11ad47d09
 	}
 	
 }

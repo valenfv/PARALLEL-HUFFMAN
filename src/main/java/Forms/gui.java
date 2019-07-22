@@ -36,8 +36,6 @@ public class gui extends JFrame {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			
 	}
 
 	/**
@@ -53,7 +51,7 @@ public class gui extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JButton btnComprimirImagen = new JButton("Comprimir imagen");
+		JButton btnComprimirImagen = new JButton("Abrir imagen");
 		btnComprimirImagen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				formCompression window = new formCompression();
