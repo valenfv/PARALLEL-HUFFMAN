@@ -2,4 +2,6 @@
 
 Este es el repositorio del TP final de Sistemas Operativos.
 
-El mismo es un proyecto MAVEN
+INTEGRANTES:
+ Fernandez Vazquez, Valentin
+ Garcia Rosas, Mauro Ariel
